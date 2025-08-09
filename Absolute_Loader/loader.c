@@ -2,69 +2,63 @@
 #include <string.h>
 #include <stdlib.h>
 
-FILE *input, *output;
-char record[100];
-
-
-int read_header_record(){
-    char program_name[10], verify_name[10];
-
-    fscanf(input, "%s", record);
-
-    // Verify Program Name
-    printf("Enter Program Name: ");
-    scanf("%s", verify_name);
-
-    int i = 2;
-    while(record[i] != '^'){
-        program_name[i-2] = record[i];
-        i++;
-    }
-    program_name[i] = '\0';
-
-    if(strcmp(program_name, verify_name) != 0){
-        printf("Invalid Program Name\n");
-        exit(0);
-    }
-    else
-        printf("Program Name: %s\n", program_name);
-    
-    fscanf(input, "%s", record);
-}
-
-
 int main() {
-    input = fopen("input.txt", "r");
-    output = fopen("output.txt", "w");
+    FILE *fp, *fp1;
+    int i, j, staddr1;
+    char name[10], line[50], name1[10], staddr[10];
 
-    read_header_record();
+    printf("Enter Program Name: ");
+    scanf("%s", name);
 
-    while(record[0] != 'E'){
-        int i = 2, starting_address;
-        char address[10];
+    fp = fopen("input.txt", "r");
+    fp1 = fopen("output.txt", "w");
 
-        while(record[i] != '^'){
-            address[i-2] = record[i];
-            i++;
-        }
-        printf("Starting Address: %s\n", address);
-        starting_address = strtol(address, NULL, 16);
-        i += 4;
-        while(i<strlen(record)-1){
-            if(record[i] != '^'){
-                printf("%06x\t%c%c\n", starting_address, record[i], record[i+1]);
-                fprintf(output, "%06x\t%c%c\n", starting_address, record[i], record[i+1]);
-                starting_address++;
-                i += 2;
-            }
-            else
-                i++;
-        }
-        fprintf(output,"\n");
-        printf("\n");
-        fscanf(input, "%s", record);
+    if (!fp || !fp1) {
+        printf("Error opening file.\n");
+        return 1;
     }
 
-    fclose(input);
-    fclose(output);
+    fscanf(fp, "%s", line);
+    for (i = 2, j = 0; i < 8 && j < 6; i++, j++)
+        name1[j] = line[i];
+    name1[j] = '\0';
+
+    printf("Name from Input File: %s\n", name1);
+
+    if (strcmp(name, name1) == 0) {
+        do {
+            fscanf(fp, "%s", line);
+
+            if (line[0] == 'T') {
+                for (i = 2, j = 0; i < 8 && j < 6; i++, j++)
+                    staddr[j] = line[i];
+                staddr[j] = '\0';
+
+                staddr1 = strtol(staddr, NULL, 16);
+                i = 12;
+
+                while (line[i] != '$' && line[i] != '\0') {
+                    if (line[i] != '^') {
+                        printf("%06X\t%c%c\n", staddr1, line[i], line[i + 1]);
+                        fprintf(fp1, "%06X\t%c%c\n", staddr1, line[i], line[i + 1]);
+                        staddr1++;
+                        i += 2;
+                    } else {
+                        i++;
+                    }
+                }
+            }
+            else if (line[0] == 'E') {
+                fclose(fp);
+                fclose(fp1);
+                exit(0);
+            }
+        } while (!feof(fp));
+    } else {
+        printf("Program name does not match.\n");
+    }
+
+    fclose(fp);
+    fclose(fp1);
+    return 0;
 }
