@@ -19,7 +19,6 @@ Implements a **two-pass assembler** to generate object code from assembly langua
 
 - [`pass1.c`](./Assembler/pass1.c) – Pass 1: Builds the symbol table and calculates program length.
 - [`pass2.c`](./Assembler/pass2.c) – Pass 2: Generates object code using the symbol and opcode tables.
-- [`pg.c`](./Assembler/pg.c) – Alternate/combined Pass 1 assembler implementation.
 
 ---
 
